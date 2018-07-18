@@ -5,14 +5,14 @@ MongoClient.connect('mongodb://localhost:27017/todoApp', (err, db) => {
     return console.log('unable to connect to the database');
   }
   console.log('succesfully connected to the mongoDB server.');
-  // db.collection('Todos').find({
-  //   _id: new ObjectID('5b49aaa405da094f98ece9fc')
-  // }).toArray().then((docs) => {
-  //   console.log('Todos');
-  //   console.log(JSON.stringify(docs, undefined, 2));
-  // }, (err) => {
-  //   console.log('unable to fetch data', err);
-  // }); //instead of having cursor we are having cursor we are having
+  db.collection('Todos').find({
+    _id: new ObjectID('5b49aaa405da094f98ece9fc')
+  }).toArray().then((docs) => {
+    console.log('Todos');
+    console.log(JSON.stringify(docs, undefined, 2));
+  }, (err) => {
+    console.log('unable to fetch data', err);
+  }); //instead of having cursor we are having cursor we are having
   //by using db.collection we can access the collect file.
   //here we are not providing a query so we are not saying we want to fetch
   //all todo's that are completed.
