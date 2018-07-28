@@ -7,4 +7,4 @@ mongoose.connect('mongodb://localhost:27017/todoApp');
 //if some file gets this file then first this will configure the connection then it will export the variable.
 module.exports = {
   mongoose
-}
+};

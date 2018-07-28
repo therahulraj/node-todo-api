@@ -13,7 +13,7 @@ var {
 var {
   users
 } = require('./models/users');
-
+const _ = require('lodash');
 //server.js is only responsible for our routs.
 //this refactoring makes it lot more easier for test, update, and manage.
 
@@ -42,7 +42,13 @@ app.use(bodyParser.json()); //this takes a middleware we can use some custom mid
 // })
 
 
-
+app.get('/todos', (req, res) => {
+  Todo.find().then((todos) => {
+    res.status(200).send({todos});
+  }, (err) => {
+    res.status(400).send();
+  })
+})
 
 
 app.get('/todos/:id', (req, res) => {
@@ -65,10 +71,7 @@ app.get('/todos/:id', (req, res) => {
 
 
 
-app.post('/todos', (req, res) => { //the url for the rest API is really
-  //important and there is lot to talk about the proper structure.
-  //body parser is going to take your JSON and convert it into an object attaching
-  //it onto this req object.
+app.post('/todos', (req, res) => {
   var todo = new Todo({
     text: req.body.text
   });
@@ -80,8 +83,44 @@ app.post('/todos', (req, res) => { //the url for the rest API is really
   })
 });
 
+app.delete('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  if(!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+  Todo.findByIdAndRemove(id).then((doc) => {
+    if(!todo) {
+      return res.status(404).send()
+    }
+    res.status(200).send(doc);
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+})
 
 
+app.patch('/todos/:id', (req, res) => {
+  var id = req.params.id;
+  var body = _.pick(req.body, ['text', 'completed']);
+  if(!ObjectID.isValid(id)) {
+    return res.status(404).send();
+  }
+  if(_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime(); //here we created a newe completedAt property at body.
+  } else {
+    body.completed = false;
+    body.completedAt = null; //if you want to remove a value from the database you can simply set it to null.
+    }
+    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {  //this is just similar in what we saw in native driver.
+      if(!todo) {                           //this will show the updated document.
+        return res.status(404).send();
+      }
+      res.send({todo})
+    }).catch((e) => {
+      res.status(400).send();
+    })
+
+})
 
 app.listen(port, () => {
   console.log('Started on port 3000');
