@@ -4,7 +4,7 @@ mongoose.Promise = global.Promise; //the promise is allready added to the langua
 mongoose.connect('mongodb://localhost:27017/todoApp');
 
 //we have mongoose configuration in different file
-//we gonna configure mongoose and export for further use in outher files.
+//if some file gets this file then first this will configure the connection then it will export the variable.
 module.exports = {
   mongoose
 }

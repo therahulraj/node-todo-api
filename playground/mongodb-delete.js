@@ -18,11 +18,11 @@ MongoClient.connect('mongodb://localhost:27017/todoApp', (err, db) => {
 // db.collection('Users').deleteOne({name: "Amrita"}).then((result) => {
 //  console.log(result);//this method will delete only the first document that passes the criteria.
 //  })
+
+
+
+
 //findOneAndDelete
-
-
-
-
 // db.collection('Users').findOneAndDelete({name: "aman"}).then((result) => {
 //   console.log(result);//this method will delete the first docment which satisfies the query and return
 //   //that document back.
