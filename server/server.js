@@ -17,7 +17,7 @@ var {
 //server.js is only responsible for our routs.
 //this refactoring makes it lot more easier for test, update, and manage.
 
-
+var port = process.env.PORT || 3000;
 var app = express();
 
 
@@ -83,7 +83,7 @@ app.post('/todos', (req, res) => { //the url for the rest API is really
 
 
 
-app.listen(3000, () => {
+app.listen(port, () => {
   console.log('Started on port 3000');
 })
 
