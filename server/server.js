@@ -1,17 +1,17 @@
 const {
   ObjectID
 } = require('mongodb');
-var express = require('express');
-var bodyParser = require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-var {
+const {
   mongoose
 } = require('./db/mongoose');
-var {
+const {
   Todo
 } = require('./models/todo');
-var {
-  users
+const {
+  User
 } = require('./models/users');
 const _ = require('lodash');
 //server.js is only responsible for our routs.
@@ -83,6 +83,27 @@ app.post('/todos', (req, res) => {
   })
 });
 
+
+
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']); //it will be added to body variable if only if it is being provided by the user.
+  //if it is not provided then the validation will fail.
+  //we will never allow user to manipulate token directly.
+  var user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();  //we are expecting a chaining promise.
+    //res.status(200).send(user);
+  }).then((token) => {
+    res.header('x-auth', token).send(user);  //the arguments are key value pairs. the key is the header name and teh value is the value you wanna set.
+    //when you prefix a header with x hyphen you're creating a custom header which means it's not necessarily a header that http support by default. it's a header you're using for specific purposes.
+    //in our case we are creating header to store jwt scheme token scheme so we're creating a custom header to store that value.
+    //we have to add on that header we have to send the token back as an http response header which is the real goal here.
+  }).catch((e) => {
+    res.status(400).send(e);
+  })
+})
+
 app.delete('/todos/:id', (req, res) => {
   var id = req.params.id;
   if(!ObjectID.isValid(id)) {
@@ -119,8 +140,13 @@ app.patch('/todos/:id', (req, res) => {
     }).catch((e) => {
       res.status(400).send();
     })
-
 })
+
+//a private route
+//this route requires validation this means this requires x auth token
+//it's gonna find that user and send that user back.
+app.get('/users/me')
+
 
 app.listen(port, () => {
   console.log('Started on port 3000');

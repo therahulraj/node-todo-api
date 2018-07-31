@@ -1,4 +1,3 @@
-
 var mongoose = require('mongoose');
 //this file is the plain old module not ehe we have created as it is not needed.
 
