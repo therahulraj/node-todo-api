@@ -69,6 +69,30 @@ UserSchema.methods.generateAuthToken = function () {
 //this is an object an on this method we can add any method we can.
 //these are going to be your instance methods.
 //now the instance methods does have access to the individual document which is great beacause we need that information in order to create jsonwebtoken
+
+
+UserSchema.statics.findByToken = function (token) {
+  //going through the process of verifying it finding the associated user and returning it.
+  var User = this; //the model method get called with
+  var decoded; //is going to store the decoded jwt values.
+
+  try {
+    decoded = jwt.verify(token, 'abc123');
+  } catch (e) {
+   // return new Promise((resolve, reject) => {
+   //   reject();
+   // })
+   return Promise.reject();
+  }
+
+  return User.findOne({  //here we are returning a promise.
+    _id: decoded._id,  //here we have to query our nested object properties inside of the tokens, so to do that we have to write it in string as shown below.
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  })
+}
+//.statics specify everything you add on to it turns it into model method.
+
 var User = mongoose.model( 'user', UserSchema);
 //at this we have made zero changes to the functionality of our application
 

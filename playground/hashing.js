@@ -68,3 +68,4 @@ console.log(token);
 //jwt.io
 
 var decoded = jwt.verify(token, '123abc');
+//jwt.verify() is going to throw error every time the secret of the token was not matched or the token was manipulated.

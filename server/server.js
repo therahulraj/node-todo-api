@@ -14,6 +14,8 @@ const {
   User
 } = require('./models/users');
 const _ = require('lodash');
+
+var {authenticate} = require('./middleware/authenticate');
 //server.js is only responsible for our routs.
 //this refactoring makes it lot more easier for test, update, and manage.
 
@@ -37,7 +39,7 @@ app.use(bodyParser.json()); //this takes a middleware we can use some custom mid
 //   res.send(req.params);
 // //that means we are able to access the value here using req.params.id
 //   }, (err) => {
-//     res.status(400).send(err);
+//     res.status(400).send(err); //status(400) is for wrong request.
 //   })
 // })
 
@@ -142,10 +144,34 @@ app.patch('/todos/:id', (req, res) => {
     })
 })
 
+
+
+
+
 //a private route
 //this route requires validation this means this requires x auth token
 //it's gonna find that user and send that user back.
-app.get('/users/me')
+app.get('/users/me', authenticate, (req, res) => {//this needs valid authentication which means you're going to need to provide a volid x auth token.
+// //it's gonna find out user and it's gonna send that user back.
+// var token = req.header('x-auth');
+// //now we have that inside of token and we can go ahead and actually verify that token fetch the user and do something with it.
+//
+// //now once again this is going to be code we use in multiple places
+//
+// //so we're going to turn it to user schema and create model method
+//   User.findByToken(token).then((user) => {
+//     if(!user) {
+//        return Promise.reject();
+//     }
+//     res.send(user);
+//   }).catch((e) => {
+//     res.status(401).send(); //authentication is required.
+//   }) //take the token value and it's going to find the appropiate user related to that token returning back to promise callbacks.
+//   //so that we can do something with that document.
+
+res.send(req.user);
+//now we have this in place we have the exact same functionality only we have it in a really reusable function.
+})
 
 
 app.listen(port, () => {
