@@ -4,7 +4,7 @@ const {SHA256} = require('crypto-js'); //and now we have access to our hashing f
 //to hash a value all we have to do is pass it into the sha256 function.
 
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require('bcryptjs');
 var message = 'I am user number 3';
 
 var hash = SHA256(message).toString(); //this will return string so we have to convert back to string.
@@ -69,3 +69,26 @@ console.log(token);
 
 var decoded = jwt.verify(token, '123abc');
 //jwt.verify() is going to throw error every time the secret of the token was not matched or the token was manipulated.
+
+
+
+
+var password = '123abc!';
+//one method is gensalt and other will actually goes through the hash process.
+
+bcrypt.genSalt(10, (err, salt) => {
+  //and here we're going to actually do the hashing decrypt
+  bcrypt.hash(password, salt, (err, hash) => {
+    console.log(hash);
+    //it has a lot of information in it like no. of rounds, length of hash, and the salt.
+    //there is no reason to have to two things a salt and a password value in the database.
+  })
+})
+
+
+var hashedPass = "$2a$10$NjIRZUrpUMkbXtuhe49uPOodaWSrRBECmZBBwFJ.MVWjR2DXlo4ni";
+
+bcrypt.compare('123abc!', hashedPass, (err, res) => { //this is the process of comparing the password if
+  //that is correct or not.
+  console.log(res); //the res will store either true/false
+})

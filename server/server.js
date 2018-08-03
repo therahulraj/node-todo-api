@@ -44,8 +44,11 @@ app.use(bodyParser.json()); //this takes a middleware we can use some custom mid
 // })
 
 
-app.get('/todos', (req, res) => {
-  Todo.find().then((todos) => {
+//here we are making our todo routes privates, it is going to be accessed by user that is logged in.
+app.get('/todos', authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id  //it's now all the todo's for currently logged in user.
+  }).then((todos) => {
     res.status(200).send({todos});
   }, (err) => {
     res.status(400).send();
@@ -53,13 +56,16 @@ app.get('/todos', (req, res) => {
 })
 
 
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id',authenticate, (req, res) => {
 
   var id = req.params.id;
   if (!ObjectID.isValid(id)) {
   return res.status(404).send({});
   }
-  Todo.findById(id).then((todo) => {
+  Todo.findOne({
+    _id: id,
+    _creator: req.token
+  }).then((todo) => {
     if(!todo) {
      return res.status(404).send();
     }
@@ -73,9 +79,10 @@ app.get('/todos/:id', (req, res) => {
 
 
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator: req.user._id
   });
 
   todo.save().then((doc) => {
@@ -106,12 +113,15 @@ app.post('/users', (req, res) => {
   })
 })
 
-app.delete('/todos/:id', (req, res) => {
+app.delete('/todos/:id', authenticate, (req, res) => {
   var id = req.params.id;
   if(!ObjectID.isValid(id)) {
     return res.status(404).send();
   }
-  Todo.findByIdAndRemove(id).then((doc) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: req.token
+  }).then((doc) => {
     if(!todo) {
       return res.status(404).send()
     }
@@ -134,7 +144,7 @@ app.patch('/todos/:id', (req, res) => {
     body.completed = false;
     body.completedAt = null; //if you want to remove a value from the database you can simply set it to null.
     }
-    Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {  //this is just similar in what we saw in native driver.
+    Todo.findOneAndUpdate({_id: id, _creator: req.token}, {$set: body}, {new: true}).then((todo) => {  //this is just similar in what we saw in native driver.
       if(!todo) {                           //this will show the updated document.
         return res.status(404).send();
       }
@@ -171,6 +181,29 @@ app.get('/users/me', authenticate, (req, res) => {//this needs valid authenticat
 
 res.send(req.user);
 //now we have this in place we have the exact same functionality only we have it in a really reusable function.
+})
+
+
+app.post('/users/login', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  User.findByCredentials(body.email, body.password).then((user) => {
+    return user.generateAuthToken().then((token) => { //this is why we have doucment and model mehtods so that we can reuse, and beneficial
+      //in abstraction.
+      res.header('x-auth', token).send(user);
+    });
+  }).catch((e) => {
+    res.status(400).send();
+  })
+})
+
+
+app.delete('/users/me/token', authenticate, (req, res) => {
+  //write the code to delete the token and that was used inside of the
+  req.user.removeToken(req.token).then(() => {
+    res.send(400).send();
+  }).catch((e) => {
+
+  })
 })
 
 
